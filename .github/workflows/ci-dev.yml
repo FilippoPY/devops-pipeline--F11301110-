@@ -64,7 +64,7 @@ jobs:
           fi
 
       # Falla temprano si TAG está vacío (var no configurada en 'dev')
-      - name: Guard: TAG must exist
+     - name: "Guard: TAG must exist"
         run: |
           if [ -z "${{ vars.BUILD_TAG }}" ]; then
             echo "ERROR: BUILD_TAG not set in environment 'dev'"; exit 1; fi
