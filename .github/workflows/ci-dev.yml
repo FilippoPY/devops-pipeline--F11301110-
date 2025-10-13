@@ -41,6 +41,7 @@ jobs:
         run: |
           TAG="build-$(date +%s)"
           echo "build_tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Generated tag: $TAG"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -54,16 +55,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -92,19 +89,13 @@ jobs:
     needs: test-unit
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           name: build-artifact
+      - run: unzip -o build.zip
 
-      - name: Unzip Artifact
-        run: unzip -o build.zip
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -135,31 +126,31 @@ jobs:
     needs: test-integration
     runs-on: ubuntu-latest
     environment: staging
+    outputs:
+      staging_tag: ${{ steps.meta.outputs.tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
       - name: Compute metadata
         id: meta
         run: |
-          TAG="${{ needs.build.outputs.build_tag }}"
+          TAG="staging-$(date +%s)"
           NOTE="Staging release after passing all tests"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "note=$NOTE" >> "$GITHUB_OUTPUT"
+          echo "✅ Generated staging tag: $TAG"
 
       - name: Release to Staging
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "🚀 Deploying to staging environment..."
-          gh release create "${{ steps.meta.outputs.tag }}" build.zip --notes "${{ steps.meta.outputs.note }}"
+          gh release create "${{ steps.meta.outputs.tag }}" build.zip --notes "${{ steps.meta.outputs.note }}" --prerelease
 
   # 5️⃣ DEPLOY PRODUCTION (manual approval)
   deploy-production:
@@ -168,23 +159,21 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
       - name: Compute metadata
         id: meta
         run: |
-          TAG="${{ needs.build.outputs.build_tag }}"
+          TAG="prod-$(date +%s)"
           NOTE="Production release after manual approval"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "note=$NOTE" >> "$GITHUB_OUTPUT"
+          echo "✅ Generated production tag: $TAG"
 
       - name: Release to Production
         env:
