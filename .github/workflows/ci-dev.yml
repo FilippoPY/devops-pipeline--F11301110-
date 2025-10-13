@@ -100,6 +100,9 @@ jobs:
         with:
           name: build-artifact
 
+      - name: Unzip Artifact
+        run: unzip -o build.zip
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -115,7 +118,8 @@ jobs:
           mkdir -p tests/integration
           echo "import os" > tests/integration/test_artifact.py
           echo "def test_artifact_exists():" >> tests/integration/test_artifact.py
-          echo "    assert os.path.exists('dist/app.txt'), '❌ dist/app.txt no existe'" >> tests/integration/test_artifact.py
+          echo "    exists = os.path.exists('dist/app.txt') or os.path.exists('./build/dist/app.txt')" >> tests/integration/test_artifact.py
+          echo "    assert exists, '❌ dist/app.txt no existe en el build artifact'" >> tests/integration/test_artifact.py
           echo "print('✅ Integration test creado correctamente.')" >> tests/integration/test_artifact.py
 
       - name: Run Integration Tests
