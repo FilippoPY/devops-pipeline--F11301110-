@@ -72,19 +72,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
 
-      - name: Ensure unit tests exist
+      - name: Create fallback unit test
         run: |
           mkdir -p tests/unit
-          cat > tests/unit/test_basic.py <<'EOF'
-def add(a, b):
-    return a + b
-
-def test_add():
-    assert add(2, 3) == 5
-
-if __name__ == "__main__":
-    print("✅ Unit test de ejemplo creado correctamente.")
-EOF
+          echo "def add(a,b): return a+b" > tests/unit/test_basic.py
+          echo "def test_add(): assert add(2,3)==5" >> tests/unit/test_basic.py
+          echo "print('✅ Unit test de ejemplo creado correctamente.')" >> tests/unit/test_basic.py
 
       - name: Run Unit Tests
         env:
@@ -117,18 +110,13 @@ EOF
           python -m pip install --upgrade pip
           pip install pytest
 
-      - name: Ensure integration test exists
+      - name: Create fallback integration test
         run: |
           mkdir -p tests/integration
-          cat > tests/integration/test_artifact.py <<'EOF'
-import os
-
-def test_artifact_exists():
-    assert os.path.exists("dist/app.txt"), "❌ dist/app.txt no existe"
-
-if __name__ == "__main__":
-    print("✅ Integration test creado correctamente.")
-EOF
+          echo "import os" > tests/integration/test_artifact.py
+          echo "def test_artifact_exists():" >> tests/integration/test_artifact.py
+          echo "    assert os.path.exists('dist/app.txt'), '❌ dist/app.txt no existe'" >> tests/integration/test_artifact.py
+          echo "print('✅ Integration test creado correctamente.')" >> tests/integration/test_artifact.py
 
       - name: Run Integration Tests
         env:
